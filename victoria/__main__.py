@@ -1,6 +1,7 @@
 from daemonize import Daemonize
 from jinja2 import Environment, PackageLoader
 from jinja2.exceptions import TemplateNotFound
+import os
 import uuid
 import logging
 import argparse
@@ -59,8 +60,11 @@ def main():
                 logger.error("Template not found")
                 continue
 
-            filename = '/tmp/%s-%s.zpl' % (APPNAME, str(uuid.uuid4()))
+            filename = '/tmp/%s/%s-%s.zpl' % (APPNAME, APPNAME, str(uuid.uuid4()))
             try:
+                f = open(filename, 'w')
+            except FileNotFoundError:
+                os.makedirs("/tmp/%s" % APPNAME, exist_ok=True)
                 f = open(filename, 'w')
             except OSError:
                 logger.error("Error opening the filename '%s'" % filename)
@@ -81,7 +85,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('--no-daemon', dest='nodaemon', action='store_true', help='Does not start the program as a daemon')
     parser.add_argument('--logfile', dest='logfile', type=str, help='Log destination', default=("/var/log/%s.log" % APPNAME))
-    parser.add_argument('--pid', dest='pid', type=str, help='Pid destination', default=("/tmp/%s.pid" % APPNAME))
+    parser.add_argument('--pid', dest='pid', type=str, help='Pid destination', default=("/var/run/%s.pid" % APPNAME))
 
     args = parser.parse_args()
 
