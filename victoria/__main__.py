@@ -8,6 +8,7 @@ import argparse
 import redis
 import time
 import json
+import socket
 
 APPNAME = "victoria"
 
@@ -20,6 +21,29 @@ env = Environment(
 )
 
 logger = logging
+
+class DirectSend():
+    ADDRESS = "192.168.0.8"
+    PORT = 9100
+
+    def send(self, content):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            s.connect((DirectSend.ADDRESS, DirectSend.PORT))
+            s.sendall(content)
+            s.shutdown(socket.SHUT_WR)
+            s.close()
+        except OSError as e:
+            logger.error(e)
+
+    def send_filename(self, filename):
+        with open(filename, "rb") as fn:
+            self.send(fn.read())
+
+SEND_METHOD = DirectSend()
+
+def launch_print(filename):
+    SEND_METHOD.send_filename(filename)
 
 def retry():
     MAX_RETRY = 30
@@ -55,7 +79,7 @@ def main():
                 continue
 
             try:
-                template = env.get_template('productbarcode40x100.zpl')
+                template = env.get_template('productbarcode70x50.zpl')
             except TemplateNotFound:
                 logger.error("Template not found")
                 continue
@@ -75,7 +99,7 @@ def main():
 
             logger.info("Launching the print of the barcode: %s" % (info['barcode']))
 
-            # sp.check_output(['lpr', '-P', 'zebra', '-o', 'raw', filename])
+            launch_print(filename)
         elif message:
             logger.debug(str(message))
         time.sleep(0.01)
