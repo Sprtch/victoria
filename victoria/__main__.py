@@ -11,6 +11,8 @@ import json
 import socket
 
 APPNAME = "victoria"
+REDIS_IN_CHAN = "victoria"
+REDIS_OUT_CHAN = "victoria_resp"
 
 r = redis.Redis(host='localhost', port=6379, db=0)
 p = r.pubsub()
@@ -28,13 +30,10 @@ class DirectSend():
 
     def send(self, content):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            s.connect((DirectSend.ADDRESS, DirectSend.PORT))
-            s.sendall(content)
-            s.shutdown(socket.SHUT_WR)
-            s.close()
-        except OSError as e:
-            logger.error(e)
+        s.connect((DirectSend.ADDRESS, DirectSend.PORT))
+        s.sendall(content)
+        s.shutdown(socket.SHUT_WR)
+        s.close()
 
     def send_filename(self, filename):
         with open(filename, "rb") as fn:
@@ -42,8 +41,14 @@ class DirectSend():
 
 SEND_METHOD = DirectSend()
 
-def launch_print(filename):
-    SEND_METHOD.send_filename(filename)
+def launch_print(filename, number=1):
+    try:
+        for _ in range(number):
+            SEND_METHOD.send_filename(filename)
+        r.set(REDIS_OUT_CHAN, 'success')
+    except OSError as e:
+        logger.error(e)
+        r.set(REDIS_OUT_CHAN, 'failed')
 
 def retry():
     MAX_RETRY = 30
@@ -51,7 +56,7 @@ def retry():
     while retry_number:
         time.sleep(min(retry_number, MAX_RETRY))
         try:
-            p.subscribe('printer')
+            p.subscribe(REDIS_IN_CHAN)
             return
         except redis.exceptions.ConnectionError:
             logger.warning("Redis server retry attempt nº%i." % retry_number)
@@ -60,7 +65,7 @@ def retry():
 
 def main():
     try:
-        p.subscribe('printer')
+        p.subscribe(REDIS_IN_CHAN)
     except redis.exceptions.ConnectionError:
         logger.warning("Failed to connect to redis server. Retrying.")
         retry()
@@ -98,8 +103,7 @@ def main():
                 f.write(str(template.render(name=info.get('name', ''), number=info['barcode'])))
 
             logger.info("Launching the print of the barcode: %s" % (info['barcode']))
-
-            launch_print(filename)
+            launch_print(filename, info.get('number', 1))
         elif message:
             logger.debug(str(message))
         time.sleep(0.01)
