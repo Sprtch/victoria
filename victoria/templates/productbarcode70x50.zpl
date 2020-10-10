@@ -32,6 +32,7 @@
 ^FD{{ number }}^FS
 
 ^CFA,{{ barcode_font }}^FO0,{{ 60 + title_line * title_height + barcode_height }}
+^CF0,35
 ^FB{{ width * dpmm }},{{ title_line }},1,C^FH
 ^FD{{ number }}^FS
 
