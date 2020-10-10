@@ -25,7 +25,7 @@ env = Environment(
 logger = logging
 
 class DirectSend():
-    ADDRESS = "192.168.0.8"
+    ADDRESS = "192.168.8.8"
     PORT = 9100
 
     def send(self, content):
