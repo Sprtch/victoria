@@ -6,7 +6,7 @@ import redis
 r = redis.Redis(host='localhost', port=6379, db=0)
 
 def main(title, barcode, size):
-    r.publish('printer', '{"name": "%s", "barcode": "%s"}' % (title, barcode))
+    r.publish('victoria', '{"name": "%s", "barcode": "%s"}' % (title, barcode))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='')
