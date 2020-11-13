@@ -23,3 +23,9 @@ command to log in the console.
 * `print.py` Send a print request through redis to the running `victoria`
   script.
 
+
+# Useful links
+
+* [Zebra ZPL Manual](https://www.zebra.com/content/dam/zebra/manuals/printers/common/programming/zpl-zbi2-pm-en.pdf)
+* [Label Viewer](http://labelary.com/viewer.html)
+* [Z4M Printer Manual](https://www.servopack.de/support/zebra/Z4Mplus_Z6Mplus.pdf)
