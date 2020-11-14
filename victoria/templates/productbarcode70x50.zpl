@@ -23,6 +23,8 @@
 
 ^CFE,{{ title_height }}^FO{{ title_margin * dpmm }},{{ title_height }}
 ^FB{{ (width * dpmm) - (title_margin * dpmm) }},{{ title_line }},3,C^FH
+^CI28
+^A0N,{{ title_height }}
 ^FD{{ name }}^FS
 
 ^FX BARCORDE SECTION.
