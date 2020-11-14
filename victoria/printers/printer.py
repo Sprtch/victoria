@@ -41,7 +41,7 @@ class Printer():
             self.print(fn.read())
 
     def launch_print(self, content, number=1):
-        if self.available:
+        if self.available():
             for _ in range(number):
                 self.print(content)
         else:

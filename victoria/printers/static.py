@@ -8,7 +8,11 @@ class StaticAddressPrinter(Printer):
         self.port = port
 
     def available(self):
-        return True
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(0.1)
+        ret = s.connect_ex((self.address, self.port))
+        s.close()
+        return (ret == 0)
 
     def print(self, content):
         try:
