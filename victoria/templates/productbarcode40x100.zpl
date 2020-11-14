@@ -1,5 +1,8 @@
-{% set barcode_length = number | length -%}
+{% set barcode_length = barcode | length -%}
 {% set name_length = name | length -%}
+{% set width = 100 %}
+{% set height = 0 %}
+{% set dpmm = 12 %}
 ^XA
 
 ^FX SEPARTECH LOGO SECTION
@@ -23,14 +26,14 @@
 ^FX BARCORDE SECTION.
 ^FO280,100^BY3
 ^BCN,80,Y,N,N,N
-^FD{{ number }}^FS
+^FD{{ barcode }}^FS
 {% else %}
 ^FO300,45^FD{{ name }}^FS
 
 ^FX BARCORDE SECTION.
 ^FO{{ 20 + ((20 - barcode_length) * 17) }},100^BY3
 ^BCN,90,Y,N,N,N
-^FD{{ number }}^FS
+^FD{{ barcode }}^FS
 {% endif %}
 
 ^XZ

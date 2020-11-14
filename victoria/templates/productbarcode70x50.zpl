@@ -1,4 +1,4 @@
-{% set barcode_length = number | length -%}
+{% set barcode_length = barcode | length -%}
 {% set name_length = name | length -%}
 {% set title_height = 45 -%}
 {% set title_line = 4 -%}
@@ -29,11 +29,11 @@
 
 ^FO{{ ((width * dpmm) - (11 * barcode_size * barcode_length + 11 * barcode_size + 11 * barcode_size + 12 * barcode_size)) // 2 }},{{ 50 + title_line * title_height }}^BY{{ barcode_size }}
 ^BCN,{{ barcode_height }},N,N,N
-^FD{{ number }}^FS
+^FD{{ barcode }}^FS
 
 ^CFA,{{ barcode_font }}^FO0,{{ 60 + title_line * title_height + barcode_height }}
 ^CF0,35
 ^FB{{ width * dpmm }},{{ title_line }},1,C^FH
-^FD{{ number }}^FS
+^FD{{ barcode }}^FS
 
 ^XZ
