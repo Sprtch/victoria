@@ -1,5 +1,6 @@
 from victoria.ipc import r, p, redis_retry_connection
 from victoria.logger import logger
+from despinassy.ipc import IpcPrintMessage, ipc_create_print_message
 from jinja2 import Environment, PackageLoader
 from jinja2.exceptions import TemplateNotFound
 from redis.exceptions import ConnectionError
@@ -29,6 +30,9 @@ class Printer():
     def debug(self, msg):
         logger.debug("[dbg:%s] %s" % (self.name, msg))
 
+    def available(self):
+        raise NotImplementedError
+
     def print(self, content):
         raise NotImplementedError
 
@@ -37,22 +41,23 @@ class Printer():
             self.print(fn.read())
 
     def launch_print(self, content, number=1):
-        try:
+        if self.available:
             for _ in range(number):
                 self.print(content)
-        except OSError as e:
-            logger.error(e)
+        else:
+            self.debug(content)
 
-    def handle_print_msg(self, content):
+    def handle_print_msg(self, printmsg : IpcPrintMessage):
         try:
             template = env.get_template('productbarcode70x50.zpl')
         except TemplateNotFound:
             self.error("Template not found")
             return
 
-        self.info("Launching the print of the barcode: %s" % (content['barcode']))
-        rendered_print = str(template.render(name=content.get('name', ''), number=content['barcode']))
-        self.launch_print(rendered_print, content.get('number', 1))
+        self.info("Launching the print of the barcode: %s" % (printmsg.barcode))
+        rendered_print = str(template.render(name=printmsg.name, barcode=printmsg.barcode))
+        # self.launch_print(rendered_print, printmsg.number or 1)
+        self.launch_print(rendered_print, 1)
 
     def handle_msg_reception(self, content):
         try:
@@ -63,7 +68,10 @@ class Printer():
         # TODO Handle the parsing of the incoming message. Verify it follows
         # the BarcodeMsg template. Redirect the message to handle the print or
         # to reconfigure the printer to use different configuration.
-        self.handle_print_msg(info)
+        try:
+            self.handle_print_msg(ipc_create_print_message(info))
+        except TypeError as e:
+            self.error("Invalid message format: %s" % e)
 
     def listen(self):
         try:
