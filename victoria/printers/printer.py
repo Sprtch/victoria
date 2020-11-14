@@ -45,7 +45,7 @@ class Printer():
             for _ in range(number):
                 self.print(content)
         else:
-            self.debug(content)
+            self.debug("\n" + content)
 
     def handle_print_msg(self, printmsg : IpcPrintMessage):
         try:
@@ -54,7 +54,7 @@ class Printer():
             self.error("Template not found")
             return
 
-        self.info("Launching the print of the barcode: %s" % (printmsg.barcode))
+        self.info("Launching the print of the barcode :%s" % (printmsg._asdict()))
         rendered_print = str(template.render(name=printmsg.name, barcode=printmsg.barcode))
         # self.launch_print(rendered_print, printmsg.number or 1)
         self.launch_print(rendered_print, 1)
