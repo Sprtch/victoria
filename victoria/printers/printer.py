@@ -1,17 +1,10 @@
 from victoria.ipc import r, p, redis_retry_connection
 from victoria.logger import logger
 from despinassy.ipc import IpcPrintMessage, ipc_create_print_message
-from jinja2 import Environment, PackageLoader
-from jinja2.exceptions import TemplateNotFound
 from redis.exceptions import ConnectionError
 import json
 import os
 import time
-
-# Jinja2 Init
-env = Environment(
-    loader=PackageLoader('victoria','templates')
-)
 
 class Printer():
     def __init__(self, name, redis):
@@ -36,6 +29,9 @@ class Printer():
     def print(self, content):
         raise NotImplementedError
 
+    def render(self, message: IpcPrintMessage):
+        raise NotImplementedError
+
     def print_filename(self, filename):
         with open(filename, "rb") as fn:
             self.print(fn.read())
@@ -47,15 +43,9 @@ class Printer():
         else:
             self.debug("\n" + content)
 
-    def handle_print_msg(self, printmsg : IpcPrintMessage):
-        try:
-            template = env.get_template('productbarcode70x50.zpl')
-        except TemplateNotFound:
-            self.error("Template not found")
-            return
-
+    def handle_print_msg(self, printmsg: IpcPrintMessage):
         self.info("Launching the print of the barcode :%s" % (printmsg._asdict()))
-        rendered_print = str(template.render(name=printmsg.name, barcode=printmsg.barcode))
+        rendered_print = self.render(printmsg)
         # self.launch_print(rendered_print, printmsg.number or 1)
         self.launch_print(rendered_print, 1)
 

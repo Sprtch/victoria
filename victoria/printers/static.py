@@ -2,10 +2,11 @@ from victoria.printers.printer import Printer
 import socket
 
 class StaticAddressPrinter(Printer):
-    def __init__(self, name, redis, address, port=9100):
+    def __init__(self, name, redis, address, port, template):
         super().__init__(name, redis)
         self.address = address
         self.port = port
+        self.template = template
 
     def available(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -24,3 +25,6 @@ class StaticAddressPrinter(Printer):
             s.close()
         except OSError as e:
             self.error(e)
+
+    def render(self, content):
+        return str(self.template.render(**content._asdict()))

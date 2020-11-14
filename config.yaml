@@ -1,9 +1,11 @@
 victoria:
     redis: 'victoria'
+    templates:
+        - "productbarcode70x50.zpl"
     printers:
         - main:
             type: "static"
             address: "192.168.8.8"
             port: 9100
-            format: "40x60"
+            template: "productbarcode70x50.zpl"
             redis: "victoria"
