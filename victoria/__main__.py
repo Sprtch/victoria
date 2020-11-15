@@ -19,22 +19,23 @@ if __name__ == "__main__":
     parser.add_argument('--no-daemon', dest='nodaemon', action='store_true', help='Does not start the program as a daemon')
     parser.add_argument('--logfile', dest='logfile', type=str, help='Log destination', default=("/var/log/%s.log" % APPNAME))
     parser.add_argument('--pid', dest='pid', type=str, help='Pid destination', default=("/var/run/%s.pid" % APPNAME))
+    parser.add_argument('--debug', dest='debuglevel', action='store_true', help='Set the log level to show debug messages')
     parser.add_argument('-c', '--config', dest='config', type=str, help='Config file location', default=("./config.yaml"))
 
     args = parser.parse_args()
 
     conf = Config(args.config)
-
+    loglevel = logger.DEBUG if args.debuglevel else logger.INFO
     if args.nodaemon:
-        logger.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.DEBUG)
+        logger.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=loglevel)
         main(conf)
     else:
         logger = logging.getLogger(__name__)
-        logger.setLevel(logging.DEBUG)
+        logger.setLevel(loglevel)
         logger.propagate = False
 
         fh = logging.FileHandler(args.logfile, "w")
-        fh.setLevel(logging.DEBUG)
+        fh.setLevel(loglevel)
         formatter = logging.Formatter(fmt='[%(asctime)s] %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
         fh.setFormatter(formatter)
 
