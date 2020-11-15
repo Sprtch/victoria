@@ -1,13 +1,18 @@
 from victoria.config import APPNAME, Config
 from victoria.logger import logger
 from daemonize import Daemonize
+import threading
 import logging
 import argparse
 
 def main(config):
+    thrlist = []
     for p in config.printers:
-        # TODO THREAD
-        p.listen()
+        t = threading.Thread(target=p.listen)
+        t.start()
+        thrlist.append(t)
+
+    for t in thrlist: t.join()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='')
