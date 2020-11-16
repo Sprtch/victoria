@@ -39,7 +39,7 @@ class Config:
             try:
                 self.templates[temp] = env.get_template(temp)
             except TemplateNotFound:
-                logger.error("Template '%s' not found" % (template))
+                logger.error("Template '%s' not found" % (temp))
                 raise TemplateNotFound
 
         for dev in config.get('printers', []):
