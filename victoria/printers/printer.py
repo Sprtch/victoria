@@ -46,8 +46,12 @@ class Printer():
     def handle_print_msg(self, printmsg: IpcPrintMessage):
         self.info("Launching the print of the barcode :%s" % (printmsg._asdict()))
         rendered_print = self.render(printmsg)
-        # self.launch_print(rendered_print, printmsg.number or 1)
-        self.launch_print(rendered_print, 1)
+        number = printmsg.number
+        if isinstance(number, str) and number.isdigit():
+            number = int(number)
+        elif not isinstance(number, int):
+            number = 1
+        self.launch_print(rendered_print, number)
 
     def handle_msg_reception(self, content):
         try:
@@ -80,4 +84,4 @@ class Printer():
                 self.handle_msg_reception(message['data'])
             elif message:
                 self.debug(str(message))
-            time.sleep(0.01)
+            time.sleep(0.1)
