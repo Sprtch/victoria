@@ -46,12 +46,7 @@ class Printer():
     def handle_print_msg(self, printmsg: IpcPrintMessage):
         self.info("Launching the print of the barcode :%s" % (printmsg._asdict()))
         rendered_print = self.render(printmsg)
-        number = printmsg.number
-        if isinstance(number, str) and number.isdigit():
-            number = int(number)
-        elif not isinstance(number, int):
-            number = 1
-        self.launch_print(rendered_print, number)
+        self.launch_print(rendered_print, printmsg.number)
 
     def handle_msg_reception(self, content):
         try:
@@ -59,9 +54,7 @@ class Printer():
         except json.decoder.JSONDecodeError as e:
             self.error("Failed to decode json data from redis: %s" % e)
             return
-        # TODO Handle the parsing of the incoming message. Verify it follows
-        # the BarcodeMsg template. Redirect the message to handle the print or
-        # to reconfigure the printer to use different configuration.
+
         try:
             self.handle_print_msg(ipc_create_print_message(info))
         except TypeError as e:
