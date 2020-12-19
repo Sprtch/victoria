@@ -38,7 +38,7 @@ class Config:
                     )
                 )
             elif devicetype == 'stdout':
-                dev = StaticAddressPrinter(
+                dev = StdoutPrinter(
                     name=name,
                     redis=content.get('redis', redis_default),
                     template=Template(
