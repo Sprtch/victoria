@@ -1,5 +1,4 @@
 from victoria.printers.printer import Printer
-import socket
 
 class StdoutPrinter(Printer):
     def __init__(self, name, redis, template):
