@@ -29,7 +29,7 @@ class Template:
                 raise ValueError(f'Expected {field.name} to be {field.type}, '
                                 f'got {repr(value)}')
 
-    def size(width, height):
+    def size(self, width, height):
         self.width = width
         self.height = height
 
