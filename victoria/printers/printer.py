@@ -7,9 +7,10 @@ import os
 import time
 
 class Printer():
-    def __init__(self, name, redis):
+    def __init__(self, name, redis, template):
         self.name = name
         self.redis = redis
+        self.template = template
 
     def warning(self, msg):
         logger.warning("[warn:%s] %s" % (self.name, msg))
@@ -30,7 +31,7 @@ class Printer():
         raise NotImplementedError
 
     def render(self, message: IpcPrintMessage):
-        raise NotImplementedError
+        return self.template.render_barcode(message)
 
     def print_filename(self, filename):
         with open(filename, "rb") as fn:

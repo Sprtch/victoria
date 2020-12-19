@@ -3,8 +3,6 @@
 {% set title_height = 45 -%}
 {% set title_line = 4 -%}
 {% set title_margin = 5 -%}
-{% set width = 70 -%}
-{% set height = 50 -%}
 {% set dpmm = 12 -%}
 {% set logo_width = 42 -%}
 {% set logo_offset = 36 -%}
