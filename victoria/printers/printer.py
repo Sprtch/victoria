@@ -1,10 +1,10 @@
-from victoria.ipc import r, p, redis_retry_connection
+from victoria.ipc import p, redis_retry_connection
 from victoria.logger import logger
 from despinassy.ipc import IpcPrintMessage, ipc_create_print_message
 from redis.exceptions import ConnectionError
 import json
-import os
 import time
+
 
 class Printer():
     def __init__(self, name, redis, template):
@@ -45,7 +45,8 @@ class Printer():
             self.debug("\n" + content)
 
     def handle_print_msg(self, printmsg: IpcPrintMessage):
-        self.info("Launching the print of the barcode :%s" % (printmsg._asdict()))
+        self.info("Launching the print of the barcode :%s" %
+                  (printmsg._asdict()))
         rendered_print = self.render(printmsg)
         self.launch_print(rendered_print, printmsg.number)
 
@@ -74,7 +75,8 @@ class Printer():
             except ConnectionError:
                 self.warning("Redis server disconnected. Retrying.")
                 redis_retry_connection(self.redis)
-            if message and (message['type'] == 'message' or message['type'] == 'pmessage'):
+            if message and (message['type'] == 'message'
+                            or message['type'] == 'pmessage'):
                 self.handle_msg_reception(message['data'])
             elif message:
                 self.debug(str(message))

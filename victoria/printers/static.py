@@ -1,6 +1,7 @@
 from victoria.printers.printer import Printer
 import socket
 
+
 class StaticAddressPrinter(Printer):
     def __init__(self, name, redis, template, address, port):
         super().__init__(name, redis, template)
@@ -24,4 +25,3 @@ class StaticAddressPrinter(Printer):
             s.close()
         except OSError as e:
             self.error(e)
-

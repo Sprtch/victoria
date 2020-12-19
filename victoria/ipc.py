@@ -6,6 +6,7 @@ import time
 r = Redis(host='localhost', port=6379, db=0)
 p = r.pubsub()
 
+
 def redis_retry_connection(channel):
     MAX_RETRY = 30
     retry_number = 1
@@ -18,4 +19,3 @@ def redis_retry_connection(channel):
             logger.warning("Redis server retry attempt nº%i." % retry_number)
             retry_number += 1
             continue
-

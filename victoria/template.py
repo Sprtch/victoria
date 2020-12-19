@@ -1,16 +1,17 @@
+from victoria.logger import logger
+from despinassy.ipc import IpcPrintMessage
 import dataclasses
 from enum import Enum
-from despinassy.ipc import IpcPrintMessage
 from jinja2 import Environment, PackageLoader
 from jinja2.exceptions import TemplateNotFound
 
 # Jinja2 Init
-env = Environment(
-    loader=PackageLoader('victoria','templates')
-)
+env = Environment(loader=PackageLoader('victoria', 'templates'))
+
 
 class DialectEnum(Enum):
     ZEBRA_ZPL = "zpl"
+
 
 @dataclasses.dataclass
 class Template:
@@ -22,12 +23,17 @@ class Template:
         self.dialect = DialectEnum(self.dialect)
         for field in dataclasses.fields(self):
             value = getattr(self, field.name)
-            if hasattr(field.type, "__args__") and len(field.type.__args__) == 2 and field.type.__args__[-1] is type(None):
-                if value is not None and not isinstance(value, field.type.__args__[0]):
-                    raise ValueError(f'Expected {field.name} to be either {field.type.__args__[0]} or None')
+            if hasattr(field.type, "__args__") and len(
+                    field.type.__args__) == 2 and isinstance(
+                        field.type.__args__[-1], None):
+                if value is not None and not isinstance(
+                        value, field.type.__args__[0]):
+                    raise ValueError(
+                        f'Expected {field.name} to be either {field.type.__args__[0]} or None'
+                    )
             elif not isinstance(value, field.type):
                 raise ValueError(f'Expected {field.name} to be {field.type}, '
-                                f'got {repr(value)}')
+                                 f'got {repr(value)}')
 
     def size(self, width, height):
         self.width = width
@@ -41,8 +47,12 @@ class Template:
 
     def render_barcode(self, msg: IpcPrintMessage):
         try:
-            templates = env.get_template(self._get_barcode_filename())
-            return str(templates.render(**msg._asdict(), width=self.width, height=self.height))
+            filename = self._get_barcode_filename()
+            templates = env.get_template(filename)
+            return str(
+                templates.render(**msg._asdict(),
+                                 width=self.width,
+                                 height=self.height))
         except TemplateNotFound:
-            logger.error("Template '%s' not found" % (temp))
+            logger.error("Template '%s' not found" % (filename))
             raise TemplateNotFound

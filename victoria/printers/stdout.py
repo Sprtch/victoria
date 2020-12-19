@@ -1,5 +1,6 @@
 from victoria.printers.printer import Printer
 
+
 class StdoutPrinter(Printer):
     def __init__(self, name, redis, template):
         super().__init__(name, redis, template)
