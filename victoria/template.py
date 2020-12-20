@@ -24,8 +24,8 @@ class Template:
         for field in dataclasses.fields(self):
             value = getattr(self, field.name)
             if hasattr(field.type, "__args__") and len(
-                    field.type.__args__) == 2 and isinstance(
-                        field.type.__args__[-1], None):
+                    field.type.__args__
+            ) == 2 and field.type.__args__[-1] is type(None):
                 if value is not None and not isinstance(
                         value, field.type.__args__[0]):
                     raise ValueError(
