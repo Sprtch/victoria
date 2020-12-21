@@ -1,1 +1,1 @@
-recursive-include victoria/templates *.zpl
+recursive-include victoria/templates *
