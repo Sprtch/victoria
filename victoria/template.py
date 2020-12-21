@@ -11,6 +11,7 @@ env = Environment(loader=PackageLoader('victoria', 'templates'))
 
 class DialectEnum(Enum):
     ZEBRA_ZPL = "zpl"
+    TEST_JSON = "json"
 
 
 @dataclasses.dataclass
@@ -42,6 +43,8 @@ class Template:
     def _get_barcode_filename(self):
         if self.dialect == DialectEnum.ZEBRA_ZPL:
             return "barcode.zpl"
+        if self.dialect == DialectEnum.TEST_JSON:
+            return "barcode.json"
         else:
             print("Not Supported")
 

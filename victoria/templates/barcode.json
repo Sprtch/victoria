@@ -1,0 +1,6 @@
+{
+  "name": "{{ name }}",
+  "barcode": "{{ barcode }}",
+  "width": "{{ width }}",
+  "height": "{{ height }}"
+}
