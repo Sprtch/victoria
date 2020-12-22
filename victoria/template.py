@@ -46,7 +46,8 @@ class Template:
         if self.dialect == DialectEnum.TEST_JSON:
             return "barcode.json"
         else:
-            print("Not Supported")
+            logger.error("The dialect '%s' is not supported" %
+                         (str(self.dialect)))
 
     def render_barcode(self, msg: IpcPrintMessage):
         try:
