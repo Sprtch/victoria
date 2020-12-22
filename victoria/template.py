@@ -1,9 +1,9 @@
 from victoria.logger import logger
 from despinassy.ipc import IpcPrintMessage
-import dataclasses
-from enum import Enum
 from jinja2 import Environment, PackageLoader
 from jinja2.exceptions import TemplateNotFound
+from enum import Enum
+import dataclasses
 
 # Jinja2 Init
 env = Environment(loader=PackageLoader('victoria', 'templates'))
