@@ -1,16 +1,18 @@
 from victoria.ipc import p, redis_retry_connection
 from victoria.logger import logger
+from victoria.template import Template
 from despinassy.ipc import IpcPrintMessage, ipc_create_print_message
 from redis.exceptions import ConnectionError
+import dataclasses
 import json
 import time
 
 
+@dataclasses.dataclass
 class Printer():
-    def __init__(self, name, redis, template):
-        self.name = name
-        self.redis = redis
-        self.template = template
+    name: str
+    redis: str
+    template: Template
 
     def warning(self, msg):
         logger.warning("[warn:%s] %s" % (self.name, msg))

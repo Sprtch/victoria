@@ -1,27 +1,23 @@
 from victoria.logger import logger
 from despinassy.ipc import IpcPrintMessage
+from despinassy.Printer import PrinterDialectEnum
 from jinja2 import Environment, PackageLoader
 from jinja2.exceptions import TemplateNotFound
-from enum import Enum
 import dataclasses
 
 # Jinja2 Init
 env = Environment(loader=PackageLoader('victoria', 'templates'))
 
 
-class DialectEnum(Enum):
-    ZEBRA_ZPL = "zpl"
-    TEST_JSON = "json"
-
-
 @dataclasses.dataclass
 class Template:
     width: int = 0
     height: int = 0
-    dialect: DialectEnum = DialectEnum.ZEBRA_ZPL
+    dialect: PrinterDialectEnum = PrinterDialectEnum.ZEBRA_ZPL
 
     def __post_init__(self):
-        self.dialect = DialectEnum(self.dialect)
+        if isinstance(self.dialect, str):
+            self.dialect = PrinterDialectEnum.from_extension(self.dialect)
         for field in dataclasses.fields(self):
             value = getattr(self, field.name)
             if hasattr(field.type, "__args__") and len(
@@ -41,9 +37,9 @@ class Template:
         self.height = height
 
     def _get_barcode_filename(self):
-        if self.dialect == DialectEnum.ZEBRA_ZPL:
+        if self.dialect == PrinterDialectEnum.ZEBRA_ZPL:
             return "barcode.zpl"
-        if self.dialect == DialectEnum.TEST_JSON:
+        if self.dialect == PrinterDialectEnum.TEST_JSON:
             return "barcode.json"
         else:
             logger.error("The dialect '%s' is not supported" %

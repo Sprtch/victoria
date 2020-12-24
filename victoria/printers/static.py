@@ -1,12 +1,12 @@
 from victoria.printers.printer import Printer
+import dataclasses
 import socket
 
 
+@dataclasses.dataclass
 class StaticAddressPrinter(Printer):
-    def __init__(self, name, redis, template, address, port):
-        super().__init__(name, redis, template)
-        self.address = address
-        self.port = port
+    address: str
+    port: int
 
     def available(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

@@ -1,5 +1,6 @@
 from victoria.printers.test import PrinterTest
-from victoria.template import Template, DialectEnum
+from victoria.template import Template
+from despinassy.Printer import PrinterDialectEnum
 from despinassy.ipc import IpcPrintMessage
 import unittest
 import json
@@ -9,7 +10,8 @@ class TestPrinter(unittest.TestCase):
     def test_printer_msg(self):
         printer = PrinterTest(
             "test_printer", "test",
-            Template(width=70, height=50, dialect=DialectEnum.TEST_JSON))
+            Template(width=70, height=50,
+                     dialect=PrinterDialectEnum.TEST_JSON))
 
         msg = IpcPrintMessage(barcode="foo", name="bar")._asdict()
         msg_str = json.dumps(msg)
