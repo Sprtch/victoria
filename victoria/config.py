@@ -1,5 +1,7 @@
-from victoria.printers import StaticAddressPrinter, StdoutPrinter, PrinterTest, Printer
+from victoria.printers import StaticAddressPrinter, StdoutPrinter, PrinterTest
 from victoria.template import Template
+from victoria.db import init_db, db
+from despinassy import Printer as PrinterTable
 import dataclasses
 import os
 import yaml
@@ -10,10 +12,15 @@ class InvalidConfigFile(Exception):
 
 
 @dataclasses.dataclass
+class DbConfig:
+    uri: str = 'sqlite://'
+
+
+@dataclasses.dataclass
 class Config:
     APPNAME = "victoria"
     redis: str = "victoria"
-    printers: list[Printer] = dataclasses.field(default_factory=list)
+    printers: list = dataclasses.field(default_factory=list)
     debug: bool = False
     logfile: str = ""
     pid: str = ""
@@ -57,11 +64,32 @@ class Config:
             printers.append(dev)
 
         self.printers = printers
+        self.save_printers()
 
         return self
 
+    def save_printers(self):
+        PrinterTable.query.delete()
+        for p in self.printers:
+            p = PrinterTable(name=p.name,
+                             type=p.get_type(),
+                             redis=p.redis,
+                             width=p.template.width,
+                             height=p.template.height,
+                             dialect=p.template.dialect,
+                             settings=p.export_config())
+            db.session.add(p)
+        db.session.commit()
+
     @staticmethod
     def from_dict(raw):
+        if raw.get('despinassy') is not None:
+            dbconfig = DbConfig(**raw['despinassy'])
+            init_db(dbconfig)
+        else:
+            dbconfig = DbConfig()
+            init_db(dbconfig)
+            db.create_all()
         if raw.get(Config.APPNAME) is not None:
             config = raw[Config.APPNAME]
         else:

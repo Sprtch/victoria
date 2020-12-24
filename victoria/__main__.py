@@ -45,7 +45,7 @@ if __name__ == "__main__":
                         default=("./config.yaml"))
 
     args = parser.parse_args()
-    conf = Config().from_yaml_file(args.config)
+    conf = Config.from_yaml_file(args.config)
     loglevel = logger.DEBUG if args.debuglevel else logger.INFO
     if args.nodaemon:
         logger.basicConfig(format='[%(asctime)s] %(message)s',

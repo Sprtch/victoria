@@ -26,6 +26,12 @@ class Printer():
     def debug(self, msg):
         logger.debug("[dbg:%s] %s" % (self.name, msg))
 
+    def get_type(self):
+        return self.PRINTER_TYPE
+
+    def export_config(self):
+        raise NotImplementedError
+
     def available(self):
         raise NotImplementedError
 

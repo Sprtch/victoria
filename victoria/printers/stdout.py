@@ -1,9 +1,13 @@
 from victoria.printers.printer import Printer
+from despinassy.Printer import PrinterTypeEnum
+import json
 
 
 class StdoutPrinter(Printer):
-    def __init__(self, name, redis, template):
-        super().__init__(name, redis, template)
+    PRINTER_TYPE: PrinterTypeEnum = PrinterTypeEnum.STDOUT
+
+    def export_config(self):
+        return json.dumps({})
 
     def available(self):
         return True

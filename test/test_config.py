@@ -1,5 +1,6 @@
 from victoria.config import Config
 from victoria.printers import StaticAddressPrinter, StdoutPrinter, PrinterTest
+from despinassy import Printer as PrinterTable
 import unittest
 
 
@@ -24,6 +25,16 @@ class TestConfig(unittest.TestCase):
         self.assertTrue(isinstance(printer, PrinterTest))
         self.assertEqual(printer.name, 'main')
         self.assertEqual(printer.redis, 'victoria')
+
+        self.assertEqual(PrinterTable.query.count(), 1)
+        p = PrinterTable.query.get(1)
+        self.assertIsNotNone(p)
+        self.assertEqual(p.type, printer.get_type())
+        self.assertEqual(p.dialect, printer.template.dialect)
+        self.assertEqual(p.name, printer.name)
+        self.assertEqual(p.width, printer.template.width)
+        self.assertEqual(p.height, printer.template.height)
+        self.assertEqual(p.settings, printer.export_config())
 
     def test_config_stdout_printer(self):
         config_dict = {
@@ -51,6 +62,16 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(printer.redis, 'test_redis')
         self.assertEqual(printer.template.width, 100)
         self.assertEqual(printer.template.height, 100)
+
+        self.assertEqual(PrinterTable.query.count(), 1)
+        p = PrinterTable.query.get(1)
+        self.assertIsNotNone(p)
+        self.assertEqual(p.type, printer.get_type())
+        self.assertEqual(p.dialect, printer.template.dialect)
+        self.assertEqual(p.name, printer.name)
+        self.assertEqual(p.width, printer.template.width)
+        self.assertEqual(p.height, printer.template.height)
+        self.assertEqual(p.settings, printer.export_config())
 
     def test_config_static_printer(self):
         config_dict = {
@@ -84,6 +105,16 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(printer.address, "192.168.0.1")
         self.assertEqual(printer.template.width, 100)
         self.assertEqual(printer.template.height, 100)
+
+        self.assertEqual(PrinterTable.query.count(), 1)
+        p = PrinterTable.query.get(1)
+        self.assertIsNotNone(p)
+        self.assertEqual(p.type, printer.get_type())
+        self.assertEqual(p.dialect, printer.template.dialect)
+        self.assertEqual(p.name, printer.name)
+        self.assertEqual(p.width, printer.template.width)
+        self.assertEqual(p.height, printer.template.height)
+        self.assertEqual(p.settings, printer.export_config())
 
 
 if __name__ == '__main__':

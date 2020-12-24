@@ -1,12 +1,21 @@
 from victoria.printers.printer import Printer
+from despinassy.Printer import PrinterTypeEnum
 import dataclasses
 import socket
+import json
 
 
 @dataclasses.dataclass
 class StaticAddressPrinter(Printer):
     address: str
     port: int
+    PRINTER_TYPE: PrinterTypeEnum = PrinterTypeEnum.STATIC
+
+    def export_config(self):
+        return json.dumps({
+            "address": self.address,
+            "port": self.port,
+        })
 
     def available(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

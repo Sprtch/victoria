@@ -1,10 +1,15 @@
 from victoria.printers.printer import Printer
+from despinassy.Printer import PrinterTypeEnum
+from typing import Optional
+import json
 
 
 class PrinterTest(Printer):
-    def __init__(self, name, redis, template):
-        super().__init__(name, redis, template)
-        self.out = None
+    out: Optional[str]
+    PRINTER_TYPE: PrinterTypeEnum = PrinterTypeEnum.TEST
+
+    def export_config(self):
+        return json.dumps({})
 
     def available(self):
         return True
