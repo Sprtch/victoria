@@ -1,12 +1,14 @@
-from victoria.logger import logger
 from despinassy.ipc import IpcPrintMessage
 from despinassy.Printer import PrinterDialectEnum
 from jinja2 import Environment, PackageLoader
 from jinja2.exceptions import TemplateNotFound
+import logging
 import dataclasses
 
 # Jinja2 Init
 env = Environment(loader=PackageLoader('victoria', 'templates'))
+
+logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass

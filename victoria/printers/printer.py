@@ -1,11 +1,13 @@
 from victoria.ipc import p, redis_retry_connection
-from victoria.logger import logger
 from victoria.template import Template
 from despinassy.ipc import IpcPrintMessage, ipc_create_print_message
 from redis.exceptions import ConnectionError
+import logging
 import dataclasses
 import json
 import time
+
+logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass

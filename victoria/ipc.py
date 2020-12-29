@@ -1,10 +1,12 @@
-from victoria.logger import logger
 from redis import Redis
 from redis.exceptions import ConnectionError
+import logging
 import time
 
 r = Redis(host='localhost', port=6379, db=0)
 p = r.pubsub()
+
+logger = logging.getLogger(__name__)
 
 
 def redis_retry_connection(channel):
