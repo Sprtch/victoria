@@ -1,7 +1,9 @@
 from victoria.printers import StaticAddressPrinter, StdoutPrinter, PrinterTest
 from victoria.template import Template
 from victoria.db import init_db, db
+from victoria.logger import init_log
 from despinassy import Printer as PrinterTable
+from typing import Optional
 import dataclasses
 import os
 import yaml
@@ -22,10 +24,12 @@ class Config:
     redis: str = "victoria"
     printers: list = dataclasses.field(default_factory=list)
     debug: bool = False
-    logfile: str = ""
-    pid: str = ""
+    logfile: Optional[str] = None
+    pidfile: Optional[str] = None
+    nodaemon: bool = False
 
     def __post_init__(self):
+        init_log(self)
         printers = []
         for dev in self.printers:
             name, content = list(dev.items())[0]
@@ -82,7 +86,9 @@ class Config:
         db.session.commit()
 
     @staticmethod
-    def from_dict(raw):
+    def from_dict(raw, **kwargs):
+        victoria_args = {**kwargs, **raw[Config.APPNAME]}
+        raw[Config.APPNAME] = victoria_args
         if raw.get('despinassy') is not None:
             dbconfig = DbConfig(**raw['despinassy'])
             init_db(dbconfig)
@@ -99,10 +105,10 @@ class Config:
         return Config(**config)
 
     @staticmethod
-    def from_yaml_file(filename):
+    def from_yaml_file(filename, **kwargs):
         if os.path.isfile(filename):
             raw = yaml.load(open(filename, 'r'), Loader=yaml.FullLoader)
         else:
             raise InvalidConfigFile('No config file in "%s"' % (filename))
 
-        return Config.from_dict(raw)
+        return Config.from_dict(raw, **kwargs)
