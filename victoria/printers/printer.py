@@ -72,7 +72,6 @@ class Printer():
             self.debug("\n" + content)
 
     def log_printer_transaction(self, msg: IpcPrintMessage):
-        self.info("Transacation")
         db.session.add(self._entry.add_transaction(**msg._asdict()))
         db.session.commit()
 
