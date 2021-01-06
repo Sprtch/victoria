@@ -4,3 +4,4 @@ daemonize
 Jinja2
 redis
 PyYAML
+psycopg2
