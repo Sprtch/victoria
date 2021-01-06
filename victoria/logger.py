@@ -1,6 +1,6 @@
 import logging
 
-logger = logging.getLogger("erie")
+logger = logging.getLogger("victoria")
 
 
 def init_log(config):
