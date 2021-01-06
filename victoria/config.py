@@ -2,7 +2,6 @@ from victoria.printers import StaticAddressPrinter, StdoutPrinter, PrinterTest
 from victoria.template import Template
 from victoria.db import init_db, db
 from victoria.logger import init_log
-from despinassy import Printer as PrinterTable
 from typing import Optional
 import dataclasses
 import os
@@ -68,22 +67,6 @@ class Config:
             printers.append(dev)
 
         self.printers = printers
-        self.save_printers()
-
-        return self
-
-    def save_printers(self):
-        PrinterTable.query.delete()
-        for p in self.printers:
-            p = PrinterTable(name=p.name,
-                             type=p.get_type(),
-                             redis=p.redis,
-                             width=p.template.width,
-                             height=p.template.height,
-                             dialect=p.template.dialect,
-                             settings=p.export_config())
-            db.session.add(p)
-        db.session.commit()
 
     @staticmethod
     def from_dict(raw, **kwargs):
@@ -96,6 +79,7 @@ class Config:
             dbconfig = DbConfig()
             init_db(dbconfig)
             db.create_all()
+
         if raw.get(Config.APPNAME) is not None:
             config = raw[Config.APPNAME]
         else:
