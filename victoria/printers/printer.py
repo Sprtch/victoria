@@ -1,13 +1,11 @@
-from victoria.ipc import p, redis_retry_connection
 from victoria.template import Template
 from victoria.db import db
+from victoria.reader import MsgReader
 from despinassy.ipc import IpcPrintMessage, ipc_create_print_message
 from despinassy import Printer as PrinterTable
-from redis.exceptions import ConnectionError
 import logging
 import dataclasses
 import json
-import time
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +15,9 @@ class Printer():
     name: str
     redis: str
     template: Template
+
+    def __post_init__(self):
+        self._reader = self.set_reader()
 
     def save_printer(self):
         q = PrinterTable.query.filter(PrinterTable.name == self.name)
@@ -47,6 +48,12 @@ class Printer():
 
     def get_type(self):
         return self.PRINTER_TYPE
+
+    def set_reader(self):
+        raise NotImplementedError
+
+    def get_reader(self):
+        return self._reader
 
     def export_config(self):
         raise NotImplementedError
@@ -102,21 +109,6 @@ class Printer():
 
     def listen(self):
         self.save_printer()
-        try:
-            p.subscribe(self.redis)
-        except ConnectionError:
-            self.warning("Failed to connect to redis server. Retrying.")
-            redis_retry_connection(self.redis)
 
-        while True:
-            try:
-                message = p.get_message()
-            except ConnectionError:
-                self.warning("Redis server disconnected. Retrying.")
-                redis_retry_connection(self.redis)
-            if message and (message['type'] == 'message'
-                            or message['type'] == 'pmessage'):
-                self.handle_msg_reception(message['data'])
-            elif message:
-                self.debug(str(message))
-            time.sleep(0.1)
+        for msg in self.get_reader().read_loop():
+            self.handle_msg_reception(msg)

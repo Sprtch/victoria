@@ -1,4 +1,5 @@
 from victoria.printers.printer import Printer
+from victoria.reader import MsgReader
 from despinassy.Printer import PrinterTypeEnum
 import dataclasses
 import socket
@@ -10,6 +11,9 @@ class StaticAddressPrinter(Printer):
     address: str
     port: int
     PRINTER_TYPE: PrinterTypeEnum = PrinterTypeEnum.STATIC
+
+    def set_reader(self):
+        return MsgReader(self.redis)
 
     def export_config(self):
         return json.dumps({

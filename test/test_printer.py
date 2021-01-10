@@ -32,9 +32,12 @@ class TestPrinter(unittest.TestCase):
 
         msg = IpcPrintMessage(barcode="foo", name="bar")._asdict()
         msg_str = json.dumps(msg)
+        printer.set_messages([msg_str])
         self.assertEqual(printer.available(), True)
-        printer.handle_msg_reception(msg_str)
-        out = json.loads(printer.out)
+        printer.listen()
+        list_out = printer.get_result()
+        self.assertEqual(len(list_out), 1)
+        out = json.loads(list_out[0])
         self.assertEqual(out['barcode'], msg['barcode'])
         self.assertEqual(out['name'], msg['name'])
 
@@ -47,6 +50,7 @@ class TestPrinter(unittest.TestCase):
         self.assertEqual(p.width, printer.template.width)
         self.assertEqual(p.height, printer.template.height)
         self.assertEqual(p.settings, printer.export_config())
+        self.assertEqual(p.available, True)
         self.assertEqual(PrinterTransaction.query.count(), 1)
 
 
