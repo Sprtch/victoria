@@ -18,9 +18,6 @@ class Printer():
     redis: str
     template: Template
 
-    def __post_init__(self):
-        self.save_printer()
-
     def save_printer(self):
         q = PrinterTable.query.filter(PrinterTable.name == self.name)
         if q.count():
@@ -54,8 +51,14 @@ class Printer():
     def export_config(self):
         raise NotImplementedError
 
-    def available(self):
+    def available(self) -> bool:
         raise NotImplementedError
+
+    def check_availability(self):
+        ret = self.available()
+        self._entry.available = ret
+        db.session.commit()
+        return ret
 
     def print(self, content):
         raise NotImplementedError
@@ -68,7 +71,7 @@ class Printer():
             self.print(fn.read())
 
     def launch_print(self, content, number=1):
-        if self.available():
+        if self.check_availability():
             for _ in range(number):
                 self.print(content)
         else:
@@ -98,6 +101,7 @@ class Printer():
             self.error("Invalid message format: %s" % e)
 
     def listen(self):
+        self.save_printer()
         try:
             p.subscribe(self.redis)
         except ConnectionError:
