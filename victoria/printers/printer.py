@@ -1,6 +1,5 @@
 from victoria.template import Template
 from victoria.db import db
-from victoria.reader import MsgReader
 from despinassy.ipc import IpcPrintMessage, ipc_create_print_message
 from despinassy import Printer as PrinterTable
 import logging
@@ -18,12 +17,27 @@ class Printer():
 
     def __post_init__(self):
         self._reader = self.set_reader()
+        self.save_printer()
 
     def save_printer(self):
+        q = PrinterTable.query.filter(PrinterTable.name == self.name)
+        if not q.count():
+            self._entry = PrinterTable(type=self.get_type(),
+                                       width=self.template.width,
+                                       height=self.template.height,
+                                       dialect=self.template.dialect,
+                                       name=self.name,
+                                       redis=self.redis,
+                                       settings=self.export_config())
+            db.session.add(self._entry)
+            db.session.commit()
+
+    def retrieve_printer(self):
         q = PrinterTable.query.filter(PrinterTable.name == self.name)
         if q.count():
             self._entry = q.first()
         else:
+            self.error("Printer should already be in the database")
             self._entry = PrinterTable(type=self.get_type(),
                                        width=self.template.width,
                                        height=self.template.height,
@@ -109,7 +123,7 @@ class Printer():
             self.error("Invalid message format: %s" % e)
 
     def listen(self):
-        self.save_printer()
+        self.retrieve_printer()
 
         for msg in self.get_reader().read_loop():
             self.handle_msg_reception(msg)
