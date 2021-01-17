@@ -35,6 +35,9 @@ class PrinterTest(Printer):
     def export_config(self):
         return json.dumps({})
 
+    def set_available(self, available=True):
+        self.isavailable = available
+
     def available(self):
         return self.isavailable
 

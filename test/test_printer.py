@@ -34,6 +34,7 @@ class TestPrinter(unittest.TestCase):
         msg_str = json.dumps(msg)
         printer.set_messages([msg_str])
         self.assertEqual(printer.available(), True)
+        self.assertEqual(len(printer.get_result()), 0)
         printer.listen()
         list_out = printer.get_result()
         self.assertEqual(len(list_out), 1)
@@ -52,6 +53,19 @@ class TestPrinter(unittest.TestCase):
         self.assertEqual(p.settings, printer.export_config())
         self.assertEqual(p.available, True)
         self.assertEqual(PrinterTransaction.query.count(), 1)
+
+    def test_printer_not_available(self):
+        printer = PrinterTest(
+            "test_printer", "test",
+            Template(width=70, height=50,
+                     dialect=PrinterDialectEnum.TEST_JSON))
+
+        msg = IpcPrintMessage(barcode="foo", name="bar")._asdict()
+        msg_str = json.dumps(msg)
+        printer.set_available(False)
+        printer.set_messages([msg_str])
+        printer.listen()
+        self.assertEqual(len(printer.get_result()), 0)
 
 
 if __name__ == '__main__':

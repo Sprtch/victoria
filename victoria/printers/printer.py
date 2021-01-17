@@ -78,11 +78,8 @@ class Printer():
             self.print(fn.read())
 
     def launch_print(self, content, number=1):
-        if self.check_availability():
-            for _ in range(number):
-                self.print(content)
-        else:
-            self.debug("\n" + content)
+        for _ in range(number):
+            self.print(content)
 
     def log_printer_transaction(self, msg: IpcPrintMessage):
         db.session.add(self._entry.add_transaction(**msg._asdict()))
@@ -91,9 +88,13 @@ class Printer():
     def handle_print_msg(self, printmsg: IpcPrintMessage):
         self.info("Launching the print of the barcode :%s" %
                   (printmsg._asdict()))
-        self.log_printer_transaction(printmsg)
-        rendered_print = self.render(printmsg)
-        self.launch_print(rendered_print, printmsg.number)
+        if self.check_availability():
+            self.log_printer_transaction(printmsg)
+            rendered_print = self.render(printmsg)
+            self.launch_print(rendered_print, printmsg.number)
+        else:
+            rendered_print = self.render(printmsg)
+            self.debug("\n" + rendered_print)
 
     def handle_msg_reception(self, content):
         try:
