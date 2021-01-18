@@ -1,16 +1,14 @@
 from victoria.ipc import p, redis_retry_connection
 from redis.exceptions import ConnectionError
-from typing import Optional
-import dataclasses
 import logging
 import time
 
 logger = logging.getLogger(__name__)
 
 
-@dataclasses.dataclass
 class MsgReader():
-    channel: str
+    def __init__(self, channel):
+        self.channel = channel
 
     def warning(self, msg):
         logger.warning("[warn:%s] %s" % (self.channel, msg))
@@ -32,18 +30,13 @@ class MsgReader():
             self.warning("No channel set")
             time.sleep(0.1)
 
-        try:
-            p.subscribe(self.channel)
-        except ConnectionError:
-            self.warning("Failed to connect to redis server. Retrying.")
-            redis_retry_connection(self.channel)
-
         while 1:
             try:
                 message = p.get_message()
             except ConnectionError:
                 self.warning("Redis server disconnected. Retrying.")
                 redis_retry_connection(self.channel)
+                continue
             if message and (message['type'] == 'message'
                             or message['type'] == 'pmessage'):
                 yield message['data']
