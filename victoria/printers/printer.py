@@ -125,5 +125,6 @@ class Printer():
     def listen(self):
         self.retrieve_printer()
 
-        for msg in self.get_reader().read_loop():
-            self.handle_msg_reception(msg)
+        with self.get_reader() as r:
+            for msg in r.read_loop():
+                self.handle_msg_reception(msg)
