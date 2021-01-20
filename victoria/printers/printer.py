@@ -21,7 +21,9 @@ class Printer():
 
     def save_printer(self):
         q = PrinterTable.query.filter(PrinterTable.name == self.name)
-        if not q.count():
+        if q.count():
+            q.first().update(dict(hidden=False))
+        else:
             self._entry = PrinterTable(type=self.get_type(),
                                        width=self.template.width,
                                        height=self.template.height,
@@ -30,7 +32,7 @@ class Printer():
                                        redis=self.redis,
                                        settings=self.export_config())
             db.session.add(self._entry)
-            db.session.commit()
+        db.session.commit()
 
     def retrieve_printer(self):
         q = PrinterTable.query.filter(PrinterTable.name == self.name)

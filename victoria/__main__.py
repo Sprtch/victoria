@@ -1,20 +1,28 @@
 from victoria.config import Config
 from victoria.logger import logger
+from victoria.db import db
+from despinassy import Printer as PrinterTable
 from daemonize import Daemonize
 import threading
 import logging
 import argparse
+import signal
 
 
 def main(config):
     thrlist = []
+
+    def signal_handler(signal, frame):
+        PrinterTable.query.update(dict(hidden=True, available=False))
+        db.session.commit()
+        exit()
+
+    signal.signal(signal.SIGINT, signal_handler)
+
     for p in config.printers:
         t = threading.Thread(target=p.listen)
         t.start()
         thrlist.append(t)
-
-    for t in thrlist:
-        t.join()
 
 
 if __name__ == "__main__":
