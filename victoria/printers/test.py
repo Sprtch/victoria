@@ -8,6 +8,12 @@ import dataclasses
 class ReaderTest():
     messages: list = dataclasses.field(default_factory=list)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        return self
+
     def set_messages(self, msgs):
         self.messages = msgs
 
