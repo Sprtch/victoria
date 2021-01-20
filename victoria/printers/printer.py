@@ -22,7 +22,7 @@ class Printer():
     def save_printer(self):
         q = PrinterTable.query.filter(PrinterTable.name == self.name)
         if q.count():
-            q.first().update(dict(hidden=False))
+            q.first().hidden = False
         else:
             self._entry = PrinterTable(type=self.get_type(),
                                        width=self.template.width,
