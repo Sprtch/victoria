@@ -50,6 +50,6 @@ if __name__ == "__main__":
                         help='Barcode size',
                         default="70x50")
     args = parser.parse_args()
-    conf = Config().parse(config)
+    conf = Config.from_dict(config)
     if len(conf.printers) == 1:
         main(conf.printers[0], args.title, args.barcode, args.size)
