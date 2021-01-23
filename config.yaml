@@ -8,7 +8,7 @@ victoria:
             type: "static"
             address: "192.168.8.8"
             port: 9100
-            width: 150
-            height: 100
+            width: 100
+            height: 150
             dialect: "zpl"
             redis: "victoria"
