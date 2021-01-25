@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 class Template:
     width: int = 0
     height: int = 0
+    rotate: bool = False
     dialect: PrinterDialectEnum = PrinterDialectEnum.ZEBRA_ZPL
 
     def __post_init__(self):
@@ -38,6 +39,9 @@ class Template:
         self.width = width
         self.height = height
 
+    def set_rotation(self, value):
+        self.rotate = value
+
     def _get_barcode_filename(self):
         if self.dialect == PrinterDialectEnum.ZEBRA_ZPL:
             return "barcode.zpl"
@@ -51,10 +55,17 @@ class Template:
         try:
             filename = self._get_barcode_filename()
             templates = env.get_template(filename)
+            if self.rotate:
+                width = self.height
+                height = self.width
+            else:
+                width = self.width
+                height = self.height
             return str(
                 templates.render(**msg._asdict(),
-                                 width=self.width,
-                                 height=self.height))
+                                 width=width,
+                                 height=height,
+                                 rotation=self.rotate))
         except TemplateNotFound:
             logger.error("Template '%s' not found" % (filename))
             raise TemplateNotFound
