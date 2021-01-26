@@ -55,16 +55,10 @@ class Template:
         try:
             filename = self._get_barcode_filename()
             templates = env.get_template(filename)
-            if self.rotate:
-                width = self.height
-                height = self.width
-            else:
-                width = self.width
-                height = self.height
             return str(
                 templates.render(**msg._asdict(),
-                                 width=width,
-                                 height=height,
+                                 width=self.width,
+                                 height=self.height,
                                  rotation=self.rotate))
         except TemplateNotFound:
             logger.error("Template '%s' not found" % (filename))
