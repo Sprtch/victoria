@@ -48,9 +48,9 @@ class Config:
                 dev = StdoutPrinter(name=name,
                                     redis=content.get('redis', self.redis),
                                     template=Template(
-                                        width=content.get('width', 50),
-                                        height=content.get('height', 70),
-                                        dialect=content.get('dialect', 'zpl'),
+                                        width=content.get('width', 0),
+                                        height=content.get('height', 0),
+                                        dialect=content.get('dialect', 'json'),
                                     ))
             elif devicetype == 'test':
                 dev = PrinterTest(name=name,
@@ -65,6 +65,19 @@ class Config:
                                         (content.get('type')))
 
             printers.append(dev)
+
+        if self.debug and not len(
+                list(
+                    filter(lambda x: isinstance(x, StdoutPrinter),
+                           self.printers))):
+            printers.append(
+                StdoutPrinter(name="STDOUT",
+                              redis=self.redis,
+                              template=Template(
+                                  width=content.get('width', 0),
+                                  height=content.get('height', 0),
+                                  dialect=content.get('dialect', 'json'),
+                              )))
 
         self.printers = printers
 
