@@ -8,21 +8,15 @@ import json
 
 
 class TestPrinter(unittest.TestCase):
-    @classmethod
-    def setUpClass(self):
+    def setUp(self):
         db.init_app(config={
             'uri': 'sqlite://',
         })
         db.drop_all()
         db.create_all()
 
-    @classmethod
-    def tearDownClass(self):
-        db.drop_all()
-
     def tearDown(self):
-        PrinterTable.query.delete()
-        PrinterTransaction.query.delete()
+        db.drop_all()
 
     def test_printer_msg(self):
         printer = PrinterTest(
