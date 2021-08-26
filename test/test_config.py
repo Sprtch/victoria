@@ -1,9 +1,20 @@
 from victoria.config import Config
 from victoria.printers import StaticAddressPrinter, StdoutPrinter, PrinterTest
+from despinassy.db import db
 import unittest
 
 
 class TestConfig(unittest.TestCase):
+    def setUp(self):
+        db.init_app(config={
+            'uri': 'sqlite://',
+        })
+        db.drop_all()
+        db.create_all()
+
+    def tearDown(self):
+        db.drop_all()
+
     def test_config_test_printer(self):
         config_dict = {
             "victoria": {
@@ -57,8 +68,6 @@ class TestConfig(unittest.TestCase):
             "victoria": {
                 "redis":
                 "victoria",
-                "debug":
-                True,
                 "printers": [{
                     "test": {
                         "type": "static",
@@ -74,7 +83,6 @@ class TestConfig(unittest.TestCase):
 
         conf = Config.from_dict(config_dict)
         self.assertEqual(conf.redis, 'victoria')
-        self.assertTrue(conf.debug)
         self.assertEqual(len(conf.printers), 1)
         printer = conf.printers[0]
         self.assertTrue(isinstance(printer, StaticAddressPrinter))
@@ -84,6 +92,12 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(printer.address, "192.168.0.1")
         self.assertEqual(printer.template.width, 100)
         self.assertEqual(printer.template.height, 100)
+
+    def test_config_debug_mode(self):
+        config_dict = {"victoria": {"redis": "victoria", "debug": True}}
+
+        conf = Config.from_dict(config_dict)
+        self.assertEqual(len(conf.printers), 1)
 
 
 if __name__ == '__main__':

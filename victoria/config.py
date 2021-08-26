@@ -74,9 +74,9 @@ class Config:
                 StdoutPrinter(name="STDOUT",
                               redis=self.redis,
                               template=Template(
-                                  width=content.get('width', 0),
-                                  height=content.get('height', 0),
-                                  dialect=content.get('dialect', 'json'),
+                                  width=0,
+                                  height=0,
+                                  dialect='json',
                               )))
 
         self.printers = printers
@@ -88,10 +88,6 @@ class Config:
         if raw.get('despinassy') is not None:
             dbconfig = DbConfig(**raw['despinassy'])
             init_db(dbconfig)
-        else:
-            dbconfig = DbConfig()
-            init_db(dbconfig)
-            db.create_all()
 
         if raw.get(Config.APPNAME) is not None:
             config = raw[Config.APPNAME]
