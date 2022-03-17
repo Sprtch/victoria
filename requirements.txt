@@ -1,5 +1,5 @@
 pytest
--e git+git://github.com/Sprtch/despinassy.git#egg=despinassy-pkg-tperale
+-e git+https://github.com/Sprtch/despinassy.git#egg=despinassy-pkg-tperale
 daemonize
 Jinja2
 redis
