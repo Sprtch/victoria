@@ -1,25 +1,30 @@
 from victoria.config import Config
 from victoria.logger import logger
-from victoria.db import db
+from victoria.db import init_db, db
 from despinassy import Printer as PrinterTable
-from daemonize import Daemonize
+import sys
+import lockfile
+import daemon
 import threading
 import logging
 import argparse
 import signal
 
+logger = logging.getLogger(__name__)
+
+def program_cleanup(signal, frame):
+    logger.info("Terminating the program from signal (%i)" % (signal))
+    PrinterTable.query.update(dict(hidden=True, available=False))
+    db.session.commit()
+    exit()
 
 def main(config):
     thrlist = []
 
-    def signal_handler(signal, frame):
-        PrinterTable.query.update(dict(hidden=True, available=False))
-        db.session.commit()
-        exit()
-
-    signal.signal(signal.SIGINT, signal_handler)
+    init_db(config.database)
 
     for p in config.printers:
+        p.initialize()
         t = threading.Thread(target=p.listen)
         t.start()
         thrlist.append(t)
@@ -58,16 +63,18 @@ if __name__ == "__main__":
 
     conf = Config.from_yaml_file(configfile, **arguments)
 
-    if args.nodaemon:
+    logger = logging.getLogger(Config.APPNAME)
+    ctx = daemon.DaemonContext(
+            pidfile=lockfile.FileLock(conf.pidfile) if conf.pidfile else None,
+            files_preserve=[i.stream for i in logger.handlers if hasattr(i, 'baseFilename')],
+            detach_process=not args.nodaemon,
+            stdout=sys.stdout,
+            stderr=sys.stderr,
+            signal_map={
+                signal.SIGTERM: program_cleanup,
+                signal.SIGINT: program_cleanup,
+            })
+    # TODO error and stdout to file ?
+
+    with ctx:
         main(conf)
-    else:
-        logger = logging.getLogger(Config.APPNAME)
-        daemon = Daemonize(app=Config.APPNAME,
-                           logger=logger,
-                           pid=conf.pidfile,
-                           action=lambda: main(conf),
-                           keep_fds=[
-                               i.stream.fileno() for i in logger.handlers
-                               if hasattr(i, 'baseFilename')
-                           ])
-        daemon.start()

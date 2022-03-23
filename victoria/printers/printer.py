@@ -29,9 +29,10 @@ class Printer():
     :class:`victoria.template` of the printer output containing size and
     output format (dialect).
     """
-    def __post_init__(self):
+    def initialize(self):
         self._reader = self.set_reader()
-        self.save_printer()
+        self.retrieve_printer()
+        self.info("Initialzed printer: '%s' on channel: '%s'" % (self.name, self.redis))
 
     def save_printer(self):
         """Save the printer to the database on class initialization.
@@ -59,25 +60,21 @@ class Printer():
         """Retrive matching printer in the database of the printer class.
 
         Check the database and find the printer in the database by 
-        looking for its name.
+        looking for its name. This function is used to have a direct pointer
+        to the database entry for this printer. This pointer is used
+        if any modification to the entry need to be done.
+
         If the printer is not in the database the function will create
-        a new entry but it should not happen.
+        a new entry. It should only happen the first time the program is
+        ran.
         Return the database entry found.
         """
         q = PrinterTable.query.filter(PrinterTable.name == self.name)
         if q.count():
             self._entry = q.first()
         else:
-            self.error("Printer should already be in the database")
-            self._entry = PrinterTable(type=self.get_type(),
-                                       width=self.template.width,
-                                       height=self.template.height,
-                                       dialect=self.template.dialect,
-                                       name=self.name,
-                                       redis=self.redis,
-                                       settings=self.export_config())
-            db.session.add(self._entry)
-            db.session.commit()
+            self.error("Printer was not found in the database: creating a new entry")
+            self.save_printer()
 
     def warning(self, msg):
         logger.warning("[warn:%s] %s" % (self.name, msg))
@@ -221,8 +218,8 @@ class Printer():
     def listen(self):
         """Infinite loop connecting to the stream of message.
         """
-        self.retrieve_printer()
 
+        # TODO Receive msg to stop the loop correctly
         with self.get_reader() as r:
             for msg in r.read_loop():
                 self.handle_msg_reception(msg)

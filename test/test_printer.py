@@ -23,6 +23,7 @@ class TestPrinter(unittest.TestCase):
             "test_printer", "test",
             Template(width=70, height=50,
                      dialect=PrinterDialectEnum.TEST_JSON))
+        printer.initialize()
 
         msg = IpcPrintMessage(barcode="foo", name="bar")._asdict()
         msg_str = json.dumps(msg)
@@ -53,6 +54,7 @@ class TestPrinter(unittest.TestCase):
             "test_printer", "test",
             Template(width=70, height=50,
                      dialect=PrinterDialectEnum.TEST_JSON))
+        printer.initialize()
 
         msg = IpcPrintMessage(barcode="foo", name="bar")._asdict()
         msg_str = json.dumps(msg)
