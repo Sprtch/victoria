@@ -46,16 +46,19 @@ The configuration serve to map the printers to a set of data.
 This is an exemple configuration file loaded with the `-c <path>` arugment.
 
 ```yaml
+despinassy:
+    uri: "postgresql://postgres@localhost/<db_name>" | "sqlite://"
+
 victoria:
     redis: 'victoria' # Default redis channel to listen to
-    templates:
-        - "productbarcode70x50.zpl" # List the available priting format
     printers:
         - main: # Name of the printer
             type: "static" # The method of communication
             address: "192.168.8.8" # The 'static' method need an address
             port: 9100  # The 'static' method need a port
-            template: "productbarcode70x50.zpl" # Refer to available templates
+            width: 100 # Print output width
+            height: 150 # Print output height
+            dialect: "zpl" # Dialect used by the printer
             redis: "victoria" # The redis channel this specific printer listen to
 ```
 
