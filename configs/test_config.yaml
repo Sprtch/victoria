@@ -1,0 +1,18 @@
+despinassy:
+    uri: "postgresql://postgres@localhost/sprtch"
+
+victoria:
+    redis: 'victoria'
+    printers:
+        - main:
+            type: "stdout"
+            width: 100
+            height: 150
+            dialect: "json"
+            redis: "victoria"
+        - warehouse:
+            type: "stdout"
+            width: 90
+            height: 150
+            dialect: "json"
+            redis: "warehouse"

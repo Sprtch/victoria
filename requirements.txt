@@ -1,7 +1,5 @@
-pytest
--e git+https://github.com/Sprtch/despinassy.git#egg=despinassy-pkg-tperale
-python-daemon
+pytest==8.3.4
+python-daemon==3.1.2
 Jinja2
-redis
-PyYAML
-psycopg2
+redis==5.2.1
+PyYAML==6.0.2

@@ -17,7 +17,10 @@ During development process the script launch the program with the following
 command to output the log in the console.
 
 ```txt
+> virtualenv venv
 > source venv/bin/activate
+> pip install -r requirements.txt
+> pip install -e .
 > venv/bin/python victoria --no-daemon --debug
 ```
 

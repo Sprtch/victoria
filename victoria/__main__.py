@@ -1,80 +1,61 @@
-from victoria.config import Config
-from victoria.logger import logger
-from victoria.db import init_db, db
-from despinassy import Printer as PrinterTable
+from victoria.config.config import Config
+from victoria.config.utils import generate_devices_from_config
+from victoria.daemon.runner import run
 import sys
-import lockfile
-import daemon
-import threading
 import logging
 import argparse
-import signal
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
-def program_cleanup(signal, frame):
-    logger.info("Terminating the program from signal (%i)" % (signal))
-    PrinterTable.query.update(dict(hidden=True, available=False))
-    db.session.commit()
-    exit()
 
-def main(config):
-    thrlist = []
+def setup_logging(logfile=None, debug=False, nodaemon=False):
+    """Return handler after setting up logging."""
+    level = logging.DEBUG if debug else logging.INFO
+    logger.setLevel(level)
 
-    init_db(config.database)
+    formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 
-    for p in config.printers:
-        p.initialize()
-        t = threading.Thread(target=p.listen)
-        t.start()
-        thrlist.append(t)
+    logger.handlers = []
+
+    handlers = []
+
+    if logfile:
+        file_handler = logging.FileHandler(logfile)
+        file_handler.setFormatter(formatter)
+        handlers.append(file_handler)
+
+    # Always keep stdout in non-daemon mode
+    if nodaemon or not logfile:
+        stream_handler = logging.StreamHandler(sys.stdout)
+        stream_handler.setFormatter(formatter)
+        handlers.append(stream_handler)
+
+    for h in handlers:
+        logger.addHandler(h)
+
+    return handlers
+
+
+def parse_args() -> argparse.Namespace:
+    """Return argparse namespace."""
+    parser = argparse.ArgumentParser(description="")
+    parser.add_argument("--no-daemon", dest="nodaemon", action="store_true", default=None)
+    parser.add_argument("--logfile", type=str, default=None)
+    parser.add_argument("--debug", action="store_true", default=None)
+    parser.add_argument("--pid", dest="pidfile", type=str, default=None)
+    parser.add_argument("-c", "--config", type=str, default="./config.yaml")
+
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='')
-    parser.add_argument('--no-daemon',
-                        dest='nodaemon',
-                        action='store_true',
-                        help='Does not start the program as a daemon')
-    parser.add_argument('--logfile',
-                        dest='logfile',
-                        type=str,
-                        help='Log destination',
-                        default=None)
-    parser.add_argument('--pid',
-                        dest='pidfile',
-                        type=str,
-                        help='Pid destination',
-                        default=None)
-    parser.add_argument('--debug',
-                        dest='debug',
-                        action='store_true',
-                        help='Set the log level to show debug messages')
-    parser.add_argument('-c',
-                        '--config',
-                        dest='config',
-                        type=str,
-                        help='Config file location',
-                        default=("./config.yaml"))
+    args = parse_args()
 
-    args = parser.parse_args()
-    configfile = vars(args).pop('config')
+    configfile = vars(args).pop("config")
     arguments = vars(args)
 
-    conf = Config.from_yaml_file(configfile, **arguments)
+    config = Config.from_yaml(configfile, **arguments)
+    devices = generate_devices_from_config(config)
+    handlers = setup_logging(config.logfile, config.debug, config.nodaemon)
 
-    logger = logging.getLogger(Config.APPNAME)
-    ctx = daemon.DaemonContext(
-            pidfile=lockfile.FileLock(conf.pidfile) if conf.pidfile else None,
-            files_preserve=[i.stream for i in logger.handlers if hasattr(i, 'baseFilename')],
-            detach_process=not args.nodaemon,
-            stdout=sys.stdout,
-            stderr=sys.stderr,
-            signal_map={
-                signal.SIGTERM: program_cleanup,
-                signal.SIGINT: program_cleanup,
-            })
-    # TODO error and stdout to file ?
-
-    with ctx:
-        main(conf)
+    run(config, devices, handlers)

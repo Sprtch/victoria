@@ -1,24 +1,17 @@
+from victoria.schema.message import VictoriaPrintMessage
+from abc import ABC
 from redis import Redis
 from redis.exceptions import ConnectionError
 import logging
 import time
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
-class MsgReaderBase():
+# TODO Write the type definition of the expected messages we would receive from
+# redis/stdin
+
+class MsgReader(ABC):
     channel: str
-
-    def warning(self, msg):
-        logger.warning("[warn:%s] %s" % (self.channel, msg))
-
-    def error(self, msg):
-        logger.error("[err:%s] %s" % (self.channel, msg))
-
-    def info(self, msg):
-        logger.info("[info:%s] %s" % (self.channel, msg))
-
-    def debug(self, msg):
-        logger.debug("[dbg:%s] %s" % (self.channel, msg))
 
     def set_channel(self, chan):
         self.channel = chan
@@ -49,15 +42,27 @@ class MsgReaderBase():
                 self.connect(channel)
                 return
             except ConnectionError:
-                self.warning("Redis server retry attempt nº%i." % retry_number)
+                logger.warning("Redis server retry attempt nº%i." % retry_number)
                 retry_number += 1
             time.sleep(min(retry_number, MAX_RETRY))
 
-    def read_loop(self):
+    def read(self) -> VictoriaPrintMessage:
         raise NotImplementedError
- 
 
-class MsgReader(MsgReaderBase):
+    def read_loop(self):
+        while 1:
+            message = self.read()
+
+            if message and (message['type'] == 'message'
+                            or message['type'] == 'pmessage'):
+                yield message['data']
+            elif message:
+                logger.debug(str(message))
+
+            time.sleep(0.1)
+
+
+class MsgReaderRedis(MsgReader):
     """
     The `MsgReader` class intercept incoming messages.
 
@@ -101,21 +106,19 @@ class MsgReader(MsgReaderBase):
         """
         self.p.subscribe(channel)
 
-    def read_loop(self):
-        # TODO Handle change of redis channel during the read loop.
-        # TODO Handle disconnection of the reading channel
+    def read(self):
         while 1:
+            # TODO Handle change of redis channel during the read loop.
+            # TODO Handle disconnection of the reading channel
             try:
-                message = self.p.get_message()
+                return self.p.get_message()
             except ConnectionError:
-                self.warning("Redis server disconnected. Retrying.")
+                logger.warning("Redis server disconnected. Retrying.")
                 self.retry_connection(self.channel)
-                continue
-
-            if message and (message['type'] == 'message'
-                            or message['type'] == 'pmessage'):
-                yield message['data']
-            elif message:
-                self.debug(str(message))
 
             time.sleep(0.1)
+
+class MsgReaderStdin(MsgReader):
+    def read(self):
+        # TODO read from stdin and make it look like the other messages
+        pass
