@@ -9,21 +9,8 @@ class PrinterDialectEnum(IntEnum):
     """Not defined dialect"""
     ZEBRA_ZPL = 1
     """The Zebra ZPL printing language"""
-    TEST_JSON = 2
+    JSON = 2
     """Output as JSON object"""
-
-    @staticmethod
-    def from_extension(extension: str):
-        """Return dialect from file extension.
-
-        :param extension: String representing the extension of the dialect.
-        """
-        if extension == "zpl":
-            return PrinterDialectEnum.ZEBRA_ZPL
-        elif extension == "json":
-            return PrinterDialectEnum.TEST_JSON
-        else:
-            return PrinterDialectEnum.UNDEFINED
 
 
 class PrinterTypeEnum(IntEnum):

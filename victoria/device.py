@@ -6,7 +6,7 @@ import dataclasses
 import logging
 import time
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 @dataclasses.dataclass
@@ -72,7 +72,7 @@ class Device:
                             else:
                                 pass # TODO self.publisher.send(PrinterLog)
                         else:
-                            pass # TODO self.publisher.send(PrinterNotAvailable)
+                            self.publisher.send(VictoriaPrinterNotAvailableMessage())
                 logger.info(
                     f"[{self.__class__.__name__}:{self.name}] Reader '{self.reader.type}' Disconnected."
                 )

@@ -1,18 +1,22 @@
-despinassy:
-    uri: "postgresql://postgres@localhost/sprtch"
-
 victoria:
     redis: 'victoria'
     printers:
-        - main:
+        - name: "main"
+          printer:
             type: "stdout"
+          template:
+            dialect: "json"
             width: 100
             height: 150
-            dialect: "json"
-            redis: "victoria"
-        - warehouse:
+          reader:
+            type: "stdin"
+        - name: "warehouse"
+          printer:
             type: "stdout"
+          template:
+            dialect: "json"
             width: 90
             height: 150
-            dialect: "json"
-            redis: "warehouse"
+          reader:
+            type: "redis"
+            redis: "victoria"

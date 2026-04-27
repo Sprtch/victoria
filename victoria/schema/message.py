@@ -45,7 +45,7 @@ class VictoriaLogMessage(BaseIpcMessage):
 
 
 @dataclasses.dataclass
-class VictoriaPrinterDisconnectMessage(BaseIpcMessage):
+class VictoriaPrinterNotAvailableMessage(BaseIpcMessage):
     type: IpcMessageType = IpcMessageType.DISCONNECT
 
 

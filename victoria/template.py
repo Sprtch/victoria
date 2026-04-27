@@ -30,32 +30,6 @@ class Template(ABC):
     height: int = 0
     rotate: bool = False
 
-    def __post_init__(self):
-        for field in dataclasses.fields(self):
-            value = getattr(self, field.name)
-            if hasattr(field.type, "__args__") and len(
-                    field.type.__args__
-            ) == 2 and field.type.__args__[-1] is type(None):
-                if value is not None and not isinstance(
-                        value, field.type.__args__[0]):
-                    raise ValueError(
-                        f'Expected {field.name} to be either {field.type.__args__[0]} or None'
-                    )
-            elif not isinstance(value, field.type):
-                raise ValueError(f'Expected {field.name} to be {field.type}, '
-                                 f'got {repr(value)}')
-
-    def size(self, width, height):
-        # TODO this should be part of the Printer definition in the device
-        # TODO add those information to the printing message before render
-        self.width = width
-        self.height = height
-
-    def set_rotation(self, value):
-        # TODO this should be part of the Printer definition in the device
-        # TODO add those information to the printing message before render
-        self.rotate = value
-
     @property
     @abstractmethod
     def dialect(self):
