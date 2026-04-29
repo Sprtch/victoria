@@ -1,14 +1,18 @@
-despinassy:
-    uri: "postgresql://postgres@localhost/sprtch"
-
 victoria:
-    redis: 'victoria'
+    name: "victoria"
+    publisher:
+      type: "redis"
+      channel: "victoria-out"
     printers:
-        - main:
+        - name: "main"
+          printer:
             type: "static"
             address: "192.168.8.8"
             port: 9100
+          template:
+            dialect: "zpl"
             width: 100
             height: 150
-            dialect: "zpl"
-            redis: "victoria"
+          reader:
+            type: "redis"
+            channel: "victoria"

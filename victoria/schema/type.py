@@ -22,7 +22,5 @@ class PrinterTypeEnum(IntEnum):
     """Not defined printer"""
     STDOUT = 1
     """Print to the terminal"""
-    TEST = 2
-    """Printer type used only on test case"""
-    STATIC = 3
+    STATIC = 2
     """Network printer with a static IP address"""

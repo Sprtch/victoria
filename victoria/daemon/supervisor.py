@@ -1,8 +1,8 @@
 import threading
 import logging
 from typing import Callable, Iterable
-from erie.device import Device
-from erie.utils.functional import attempt, attempt_all
+from victoria.device import Device
+from victoria.utils.functional import attempt, attempt_all
 
 logger = logging.getLogger(__name__)
 

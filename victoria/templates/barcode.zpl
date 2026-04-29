@@ -1,5 +1,5 @@
 {% set barcode_length = barcode | length -%}
-{% set name_length = name | length -%}
+{% set title_length = title | length -%}
 {% set title_height = 45 -%}
 {% set title_line = 4 -%}
 {% set title_margin = 5 -%}
@@ -40,7 +40,7 @@
 ^CI28
 ^A0N,{{ title_height }}
 {% endif -%}
-^FD{{ name }}^FS
+^FD{{ title }}^FS
 
 ^FX BARCORDE IMAGE SECTION.
 

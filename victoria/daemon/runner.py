@@ -6,9 +6,9 @@ from typing import Iterable
 from lockfile import FileLock
 import daemon
 
-from erie.config.config import Config
-from erie.device import Device
-from erie.utils.functional import attempt_all
+from victoria.config.config import Config
+from victoria.device import Device
+from victoria.utils.functional import attempt_all
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ def build_daemon_context(config: Config, log_handlers) -> daemon.DaemonContext:
 
 
 def run(config: Config, devices: Iterable[Device], log_handlers) -> None:
-    from erie.daemon.supervisor import run_workers
+    from victoria.daemon.supervisor import run_workers
 
     stop_event = threading.Event()
     handler = make_signal_handler(stop_event, devices)

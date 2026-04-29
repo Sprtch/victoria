@@ -1,10 +1,12 @@
-from victoria.reader.reader import Reader
-from victoria.printer.printer import Printer
+from victoria.reader.base import Reader
+from victoria.printer.base import Printer
 from victoria.template import Template
-from victoria.publisher import Publisher
+from victoria.publisher.base import Publisher
+from victoria.schema.message import VictoriaPrintMessage
 import dataclasses
 import logging
 import time
+import json
 
 logger = logging.getLogger()
 
@@ -37,21 +39,19 @@ class Device:
     template: Template
     """Processor to transform a raw input into a printable message."""
 
+    def __post_init__(self):
+        self.logger = logging.getLogger(f"{self.__class__.__name__}.{self.name}")
+
     def disconnect(self):
-        # TODO send a message that notificate the disconnection.
         pass
 
     def read_loop(self, stop_event=None):
-        logger.info(
-            f"[{self.__class__.__name__}:{self.name}] Init `read_loop` function."
-        )
+        self.logger.info("Init `read_loop` function.")
 
         while stop_event is None or not stop_event.is_set():
             if not self.reader.present():
                 # TODO
-                logger.debug(
-                    f"[{self.__class__.__name__}:{self.name}] Reader '{self.reader.type}' is not present"
-                )
+                self.logger.debug(f"Reader '{self.reader.type}' is not present")
                 time.sleep(5)
             else:
                 # self.publisher.send(
@@ -59,25 +59,22 @@ class Device:
                 #         device=self.name,
                 #     )
                 # )
-                logger.info(
-                    f"[{self.__class__.__name__}:{self.name}] Reader '{self.reader.type}' connecting."
-                )
+                self.logger.info(f"Reader '{self.reader.type}' connecting.")
                 with self.reader as reader:
                     for content in reader.retrieve(stop_event):
-                        template = self.template.render(content)
+                        message = VictoriaPrintMessage(**json.loads(content))
+                        template = self.template.render(message)
                         if self.printer.available():
-                            ret = self.printer.print(template, number=content.number)
+                            ret = self.printer.print(template, number=message.number)
                             if ret is None:
                                 pass # TODO self.publisher.send(PrinterError)
                             else:
                                 pass # TODO self.publisher.send(PrinterLog)
                         else:
-                            self.publisher.send(VictoriaPrinterNotAvailableMessage())
-                logger.info(
-                    f"[{self.__class__.__name__}:{self.name}] Reader '{self.reader.type}' Disconnected."
-                )
-        self.publisher.send(
-            IpcDisconnectMessage(
-                device=self.name,
-            )
-        )
+                            pass # TODO self.publisher.send(VictoriaPrinterNotAvailableMessage())
+                self.logger.info(f"Reader '{self.reader.type}' Disconnected.")
+        # self.publisher.send(
+        #     IpcDisconnectMessage(
+        #         device=self.name,
+        #     )
+        # )

@@ -1,5 +1,5 @@
 {
-  "name": "{{ name }}",
+  "title": "{{ title }}",
   "barcode": "{{ barcode }}",
   "width": "{{ width }}",
   "height": "{{ height }}"

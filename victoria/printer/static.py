@@ -1,4 +1,5 @@
-from victoria.printers.printer import Printer
+from victoria.printer.base import Printer
+from victoria.schema.type import PrinterTypeEnum
 import logging
 import dataclasses
 import socket

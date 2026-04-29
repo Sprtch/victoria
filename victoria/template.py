@@ -50,7 +50,7 @@ class TemplateJinja(Template):
             # TODO use something like "__file__" ?
             return str(
                 templates.render(
-                    **msg._asdict(),
+                    **msg.asdict(),
                     width=self.width,
                     height=self.height,
                     rotation=self.rotate

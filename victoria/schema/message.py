@@ -14,10 +14,8 @@ class BaseIpcMessage:
     device: str
     """Device name that originate the message"""
 
-    origin: str = "victoria"
+    origin: str
     """Application that originated the message"""
-
-    type: IpcMessageType = IpcMessageType.UNDEFINED
 
     def asdict(self):
         return dataclasses.asdict(self)

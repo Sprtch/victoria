@@ -1,22 +1,27 @@
 victoria:
-    redis: 'victoria'
+    name: "victoria"
+    debug: true
+    nodaemon: true
+    publisher:
+      type: "redis"
+      channel: "victoria-out"
     printers:
         - name: "main"
-          printer:
-            type: "stdout"
+          reader:
+            type: "stdin"
           template:
             dialect: "json"
             width: 100
             height: 150
-          reader:
-            type: "stdin"
+          printer:
+            type: "stdout"
         - name: "warehouse"
+          reader:
+            type: "redis"
+            channel: "victoria"
           printer:
             type: "stdout"
           template:
             dialect: "json"
             width: 90
             height: 150
-          reader:
-            type: "redis"
-            redis: "victoria"

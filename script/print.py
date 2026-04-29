@@ -1,4 +1,4 @@
-from despinassy.ipc import IpcPrintMessage, redis_subscribers_num
+from victoria.schema.message import VictoriaPrintMessage, IpcMessageType
 import argparse
 import redis
 import json
@@ -6,17 +6,16 @@ import json
 r = redis.Redis(host='localhost', port=6379, db=0)
 
 
-def main(channel, title, barcode, number):
-    msg = IpcPrintMessage(
+def main(channel, title, barcode, number, device, origin):
+    msg = VictoriaPrintMessage(
+        device=device,
+        origin=origin,
+        title=title,
         barcode=barcode,
-        name=title,
         number=number,
+        type=IpcMessageType.PRINT,
     )
-    if redis_subscribers_num(r, channel):
-        r.publish(channel, json.dumps(msg._asdict()))
-
-    else:
-        print("No recipient in channel '%s'" % (channel))
+    r.publish(channel, json.dumps(msg.asdict()))
 
 
 if __name__ == "__main__":
@@ -44,7 +43,17 @@ if __name__ == "__main__":
                         type=int,
                         help='The number of prints',
                         default=1)
+    parser.add_argument('--device',
+                        dest='device',
+                        type=str,
+                        help='Device name',
+                        default='victoria')
+    parser.add_argument('--origin',
+                        dest='origin',
+                        type=str,
+                        help='Origin application',
+                        default='victoria')
 
     args = parser.parse_args()
 
-    main(args.redis, args.title, args.barcode, args.number)
+    main(args.redis, args.title, args.barcode, args.number, args.device, args.origin)
