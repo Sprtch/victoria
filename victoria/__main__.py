@@ -1,6 +1,6 @@
 from victoria.config.config import Config
 from victoria.config.util import generate_devices_from_config
-from victoria.daemon.runner import run
+from erie.daemon.runner import run
 import sys
 import logging
 import argparse

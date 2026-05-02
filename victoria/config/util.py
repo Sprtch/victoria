@@ -1,16 +1,18 @@
 from victoria.config.config import Config
-from victoria.reader.redis import RedisReader
-from victoria.reader.stdin import Stdin
+from erie.reader.redis import RedisReader
+from erie.reader.stdin import Stdin
 
-from victoria.publisher.redis import RedisPublisher
-from victoria.publisher.stdout import Stdout
+from erie.publisher.redis import Redis
+from erie.publisher.stdout import Stdout
 
 from victoria.printer.stdout import StdoutPrinter
 from victoria.printer.static import StaticAddressPrinter
 
+from victoria.transformer import JsonTransformer, RawTransformer
+
 from victoria.template import TemplateZpl, TemplateJson
 
-from victoria.device import Device
+from victoria.device import VictoriaDevice
 
 
 def generate_devices_from_config(config: Config):
@@ -40,8 +42,10 @@ def generate_devices_from_config(config: Config):
                 port=dev.reader.port,
                 db=dev.reader.db,
             )
+            transformer = JsonTransformer()
         elif dev.reader.type == "stdin":
             reader = Stdin()
+            transformer = RawTransformer()
         else:
             raise ValueError(f"{dev.name}: unknown reader type '{dev.reader.type}'")
 
@@ -49,7 +53,7 @@ def generate_devices_from_config(config: Config):
         if dev.publisher.type == "redis":
             if not dev.publisher.channel:
                 raise ValueError(f"{dev.name}: redis publisher requires 'channel'")
-            publisher = RedisPublisher(
+            publisher = Redis(
                 host=dev.publisher.host,
                 port=dev.publisher.port,
                 channel=dev.publisher.channel
@@ -72,9 +76,10 @@ def generate_devices_from_config(config: Config):
         else:
             raise ValueError(f"{dev.name}: unknown dialect type '{dev.reader.type}'")
 
-        device = Device(
+        device = VictoriaDevice(
             name=dev.name,
             reader=reader,
+            transformer=transformer,
             printer=printer,
             publisher=publisher,
             template=template,

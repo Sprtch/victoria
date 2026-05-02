@@ -1,8 +1,10 @@
-from victoria.reader.base import Reader
 from victoria.printer.base import Printer
 from victoria.template import Template
-from victoria.publisher.base import Publisher
+from victoria.transformer import MessageTransformer
 from victoria.schema.message import VictoriaPrintMessage
+from erie.device import Device
+from erie.reader import Reader
+from erie.publisher import Publisher
 import dataclasses
 import logging
 import time
@@ -12,7 +14,7 @@ logger = logging.getLogger()
 
 
 @dataclasses.dataclass
-class Device:
+class VictoriaDevice(Device):
     """Device definition built from the configuration.
 
     An input device is defined by multiple components:
@@ -24,11 +26,10 @@ class Device:
     - The 'output' or the medium to push out the message.
     """
 
-    name: str
-    """Familiar name to give to a device."""
-
     reader: Reader
     """The input source."""
+
+    transformer: MessageTranformer
 
     printer: Printer
     """The printer source."""
@@ -38,12 +39,6 @@ class Device:
 
     template: Template
     """Processor to transform a raw input into a printable message."""
-
-    def __post_init__(self):
-        self.logger = logging.getLogger(f"{self.__class__.__name__}.{self.name}")
-
-    def disconnect(self):
-        pass
 
     def read_loop(self, stop_event=None):
         self.logger.info("Init `read_loop` function.")
@@ -62,7 +57,7 @@ class Device:
                 self.logger.info(f"Reader '{self.reader.type}' connecting.")
                 with self.reader as reader:
                     for content in reader.retrieve(stop_event):
-                        message = VictoriaPrintMessage(**json.loads(content))
+                        message = self.transformer.transform(content)
                         template = self.template.render(message)
                         if self.printer.available():
                             ret = self.printer.print(template, number=message.number)

@@ -15,7 +15,7 @@ class BaseIpcMessage:
     """Device name that originate the message"""
 
     origin: str
-    """Application that originated the message"""
+    """Application that originated the message (huron, erie, victoria, ...)"""
 
     def asdict(self):
         return dataclasses.asdict(self)

@@ -6,6 +6,10 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name="victoria-pkg-tperale", # Replace with your own username
     version="0.0.1",
+    install_requires=[
+        "Jinja2",
+        "PyYAML==6.0.2",
+    ],
     author="tperale",
     author_email="perale.thomas@gmail.com",
     description="A barcode printer daemon",
