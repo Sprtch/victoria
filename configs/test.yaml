@@ -1,27 +1,27 @@
 victoria:
-    name: "victoria"
-    debug: true
-    nodaemon: true
-    publisher:
-      type: "redis"
-      channel: "victoria-out"
+    name: "victoria"             # Application name used for logging and identification.
+    debug: true                  # Enable debug-level logging output.
+    nodaemon: true               # Run in foreground; do not fork into daemon mode.
+    publisher:                   # Default publisher for all printers (can be overridden per-printer).
+      type: "redis"              # Publisher backend: "redis" or "stdout".
+      channel: "victoria-out"    # Redis channel for outgoing messages.
     printers:
-        - name: "main"
+        - name: "main"           # Unique name identifying this printer device.
           reader:
-            type: "stdin"
+            type: "stdin"        # Read print jobs from standard input (for local testing).
           template:
-            dialect: "json"
-            width: 100
-            height: 150
+            dialect: "json"      # JSON dialect for debug/development (no ZPL rendering).
+            width: 100           # Label width in dots.
+            height: 150          # Label height in dots.
           printer:
-            type: "stdout"
-        - name: "warehouse"
+            type: "stdout"       # Output labels to standard output instead of a real printer.
+        - name: "warehouse"      # Second printer device for testing multi-printer setups.
           reader:
-            type: "redis"
-            channel: "victoria"
+            type: "redis"        # Read print jobs from Redis.
+            channel: "victoria"  # Redis channel this printer listens to for print jobs.
           printer:
-            type: "stdout"
+            type: "stdout"       # Output labels to standard output.
           template:
-            dialect: "json"
-            width: 90
-            height: 150
+            dialect: "json"      # JSON dialect for debug/development.
+            width: 90            # Label width in dots.
+            height: 150          # Label height in dots.

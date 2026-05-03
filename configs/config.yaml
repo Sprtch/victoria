@@ -1,18 +1,18 @@
 victoria:
-    name: "victoria"
-    publisher:
-      type: "redis"
-      channel: "victoria-out"
+    name: "victoria"             # Application name used for logging and identification.
+    publisher:                   # Default publisher for all printers (can be overridden per-printer).
+      type: "redis"              # Publisher backend: "redis" or "stdout".
+      channel: "victoria-out"    # Redis channel for outgoing messages.
     printers:
-        - name: "main"
+        - name: "main"           # Unique name identifying this printer device.
           printer:
-            type: "static"
-            address: "192.168.8.8"
-            port: 9100
+            type: "static"       # Output type: "static" for network printers, "stdout" for console.
+            address: "192.168.8.8" # IP address of the printer (required for "static").
+            port: 9100           # Port of the printer (required for "static").
           template:
-            dialect: "zpl"
-            width: 100
-            height: 150
+            dialect: "zpl"       # Label dialect: "zpl" (Zebra ZPL) or "json" (debug).
+            width: 100           # Label width in dots.
+            height: 150          # Label height in dots.
           reader:
-            type: "redis"
-            channel: "victoria"
+            type: "redis"        # Input source: "redis", "stdin", or "evdev".
+            channel: "victoria"  # Redis channel this printer listens to for print jobs.

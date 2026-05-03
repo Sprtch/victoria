@@ -1,69 +1,119 @@
 # Victoria
 
-Victoria is the barcode printing daemon handling the barcode generation
-and the connection with the network connected printer.
+Victoria is a barcode printing daemon that receives print jobs over
+_Redis_, renders them into printer-native formats (ZPL, JSON), and
+dispatches the output to one or more network-connected printers.
 
-It act as the gateway for the other process to physically print the barcodes
-they send through _redis_.
-Victoria also handle the data dispatching to printers and serve as
-an abstraction for the different printers and the printing dialect.
+It acts as an abstraction layer between upstream services and the
+physical printers, handling label templating, dialect conversion, and
+multi-printer routing.
 
-## Usage
+```mermaid
+flowchart LR
+    %% Components
+    ERIE["ERIE\n(Input Daemon / Barcode Scanner)"]
+    HURON["HURON\nFlask Web API + Redis Worker\n(DB Access)"]
+    VICTORIA["VICTORIA\nPrinting Daemon\n(Templates + Printers)"]
+    REDIS[(Redis Message Bus)]
+    DB[(Database)]
+    PRINTERS[(Printers)]
 
-This package run as a daemon in the buildroot [firmware](https://github.com/Sprtch/buildroot)
-with file logging and pid file.
+    %% Highlight ERIE
+    style VICTORIA fill:#1e90ff,color:#ffffff,stroke:#0b3d91,stroke-width:3px
 
-During development process the script launch the program with the following
-command to output the log in the console.
+    %% Flows
+    ERIE -->|Publish scan events| REDIS
+    REDIS -->|Consume messages| HURON
 
-```txt
-> virtualenv venv
-> source venv/bin/activate
-> pip install -r requirements.txt
-> pip install -e .
-> venv/bin/python victoria --no-daemon --debug
+    HURON -->|DB read/write| DB
+    HURON -->|Send print jobs| REDIS
+
+    REDIS -->|Consume print jobs| VICTORIA
+    VICTORIA -->|Print output| PRINTERS
 ```
 
-## Utils
+## Quick Start
 
-A set of utility script are available in the `/utils` directory.
+```bash
+virtualenv venv && source venv/bin/activate
+pip install -r requirements.txt && pip install -e .
+python -m victoria --no-daemon --debug
+```
 
-### `gen.py`
+## Configuration
 
-Generate a template with the title passed with `--title` argument, and
-the barcode info with `--barcode` argument.
+Victoria is configured via a YAML (or JSON) file passed with the `-c` flag.
 
-### `print.py`
+```bash
+python -m victoria -c configs/config.yaml
+```
 
-Send a print request through redis to the running `victoria` script.
+### Config File Structure
 
-## Configure
-
-The configuration serve to map the printers to a set of data.
-
-* The communication medium to the printer
-* The mandatory data to communicate with the printer depending on the medium
-* The redis channel to listen to
-* The available templates to print
-
-This is an exemple configuration file loaded with the `-c <path>` arugment.
+The config file is wrapped under the `victoria` top-level key. Example:
 
 ```yaml
-despinassy:
-    uri: "postgresql://postgres@localhost/<db_name>" | "sqlite://"
-
 victoria:
-    redis: 'victoria' # Default redis channel to listen to
-    printers:
-        - main: # Name of the printer
-            type: "static" # The method of communication
-            address: "192.168.8.8" # The 'static' method need an address
-            port: 9100  # The 'static' method need a port
-            width: 100 # Print output width
-            height: 150 # Print output height
-            dialect: "zpl" # Dialect used by the printer
-            redis: "victoria" # The redis channel this specific printer listen to
+    name: "victoria"       # Familiar name of the application.
+    debug: false            # Enable debug logging level (default: warn).
+    nodaemon: true          # Run in foreground instead of daemonizing.
+    logfile: "/var/log/victoria.log"  # Log file path (default: stdout).
+    pidfile: "/run/victoria.pid"      # PID file for daemon mode (default: none).
+    publisher:              # Default publisher used when a printer doesn't define its own.
+      type: "redis"         # Publisher backend: "redis" or "stdout".
+      host: "localhost"     # Redis host address.
+      port: 6379            # Redis port.
+      channel: "victoria-out" # Redis channel name for outgoing messages.
+      db: 0                 # Redis database number.
+    printers:               # List of printer definitions.
+      - name: "main"        # Unique name identifying this printer.
+        reader:             # Input source for print jobs.
+          type: "redis"     # Reader type: "redis", "stdin", or "evdev".
+          channel: "victoria" # Redis channel this printer listens on.
+          host: "localhost" # Redis host (for "redis" type).
+          port: 6379        # Redis port (for "redis" type).
+          db: 0             # Redis database number.
+        template:           # Label template configuration.
+          dialect: "zpl"    # Template dialect: "zpl" for Zebra printers or "json" for debugging.
+          width: 100        # Label width in dots.
+          height: 150       # Label height in dots.
+        printer:            # Output destination for rendered labels.
+          type: "static"    # Printer type: "static" (network) or "stdout" (console).
+          address: "192.168.8.8" # Printer IP address (required for "static" type).
+          port: 9100        # Printer port (required for "static" type).
+        publisher:          # Per-printer publisher override (optional, uses default if omitted).
+          type: "redis"
+          channel: "victoria-out"
 ```
+
+## Development
+
+### Linting
+
+```bash
+ruff check .
+```
+
+### Testing
+
+```bash
+pytest test/ -v --timeout=5
+```
+
+CI runs on GitHub Actions with Python 3.12.
+
+### Scripts
+
+A set of utility scripts are available in the `/utils` directory.
+
+| Script | Description |
+|--------|-------------|
+| `gen.py` | Generate a label template. Accepts `--title` for the label title and `--barcode` for the barcode data. |
+| `print.py` | Send a print request through Redis to the running `victoria` daemon. |
+
+## License
+
+GPL-3.0, see [LICENSE](LICENSE) for details.
 
 ## Useful links
 
